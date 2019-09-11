@@ -9,7 +9,7 @@ import xml.etree.ElementTree as ET
 
 
 START_BOUNDING_BOX_ID = 1
-PRE_DEFINE_CATEGORIES = {}
+PRE_DEFINE_CATEGORIES = {"word": 1}
 # If necessary, pre-define category and its id
 #  PRE_DEFINE_CATEGORIES = {"aeroplane": 1, "bicycle": 2, "bird": 3, "boat": 4,
                          #  "bottle":5, "bus": 6, "car": 7, "cat": 8, "chair": 9,
@@ -42,8 +42,10 @@ def get_filename_as_int(filename):
         raise NotImplementedError('Filename %s is supposed to be an integer.'%(filename))
 
 
-def convert(xml_list, xml_dir, json_file):
-    list_fp = open(xml_list, 'r')
+def convert(xml_dir, json_file):
+    list_fp = os.listdir(xml_dir)
+    if '.DS_Store' in list_fp:
+        list_fp.remove('.DS_Store')
     json_dict = {"images":[], "type": "instances", "annotations": [],
                  "categories": []}
     categories = PRE_DEFINE_CATEGORIES
@@ -66,8 +68,8 @@ def convert(xml_list, xml_dir, json_file):
         size = get_and_check(root, 'size', 1)
         width = int(get_and_check(size, 'width', 1).text)
         height = int(get_and_check(size, 'height', 1).text)
-        image = {'file_name': filename, 'height': height, 'width': width,
-                 'id':image_id}
+        image = {'file_name': filename.split('.')[0]+'.jpg', 'height': height, 'width': width,
+                 'id':image_id}          #这里改了一点点，因为之前voc的filename没有用到，所以要改一下
         json_dict['images'].append(image)
         ## Cruuently we do not support segmentation
         #  segmented = get_and_check(root, 'segmented', 1).text
@@ -101,13 +103,14 @@ def convert(xml_list, xml_dir, json_file):
     json_str = json.dumps(json_dict)
     json_fp.write(json_str)
     json_fp.close()
-    list_fp.close()
 
 
 if __name__ == '__main__':
+    '''
     if len(sys.argv) <= 1:
-        print('3 auguments are need.')
-        print('Usage: %s XML_LIST.txt XML_DIR OUTPU_JSON.json'%(sys.argv[0]))
+        print('2 auguments are need.')
+        print('Usage: %s XML_DIR OUTPU_JSON.json'%(sys.argv[0]))
         exit(1)
-
-    convert(sys.argv[1], sys.argv[2], sys.argv[3])
+    '''
+   # convert(sys.argv[1], sys.argv[2])
+    convert('/Users/yunyubai/Downloads/dataset/training_data/xmls', './train.json')
